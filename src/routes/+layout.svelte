@@ -5,6 +5,7 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import { PUBLIC_CONVEX_URL } from '$env/static/public';
 	import { setupConvex } from 'convex-svelte';
+	import { Toaster } from '$lib/components/ui/sonner';
 
 	setupConvex(PUBLIC_CONVEX_URL);
 	let { children } = $props();
@@ -14,6 +15,9 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
+<Toaster richColors position="top-right" />
 <ModeWatcher />
 <Navbar />
-{@render children?.()}
+<div class="md:container md:mx-auto">
+	{@render children?.()}
+</div>

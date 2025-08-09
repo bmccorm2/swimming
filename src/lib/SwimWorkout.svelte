@@ -1,20 +1,14 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
-	import type { TagType } from '$lib/types';
 	import { PencilLine, Trash2, Link } from '@lucide/svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { page } from '$app/state';
 	import { toast } from 'svelte-sonner';
 	import { formatToMST } from '$lib/utilities';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '../convex/_generated/api';
 
-	interface Props {
-		swimWorkoutText: string;
-		yards: number;
-		_creationTime: string;
-		author?: string | undefined | null;
-		tags?: TagType[] | undefined;
-		id?: number | undefined;
-	}
+	const client = useConvexClient();
 
 	let {
 		swimWorkoutText,
@@ -22,13 +16,19 @@
 		_creationTime,
 		author = undefined,
 		tags = undefined,
-		id = undefined
-	}: Props = $props();
+		_id = undefined
+	} = $props();
 
 	const copyLink = async (link: string) => {
 		await navigator.clipboard.writeText(link);
 		toast.info(`Workout link copied!`);
 	};
+
+	function hideWorkout() {
+		client.mutation(api.swimWorkouts.hide, {
+			id: _id
+		});
+	}
 </script>
 
 <Card.Root class="mb-2 md:mb-0">
@@ -37,27 +37,27 @@
 			<div class="flex content-center gap-3">
 				<!-- DATE -->
 				<div class="text-3xl font-bold underline">
-					<a href={`/swimming/display/${id}`}>
+					<a href={`/swimming/display/${_id}`}>
 						{formatToMST(_creationTime)}
 					</a>
 				</div>
 			</div>
 			<!-- ACTIONS -->
 			<div class="flex items-center gap-3">
-				<button onclick={() => copyLink(`${page.url.origin}/swimming/display/${id}`)}>
+				<button
+					class="cursor-pointer"
+					onclick={() => copyLink(`${page.url.origin}/swimming/display/${_id}`)}
+				>
 					<Link class="h-4 w-4" />
 				</button>
 				<button>
-					<a href="swimming/modify/{id}">
+					<a href="swimming/modify/{_id}">
 						<PencilLine class="h-4 w-4" />
 					</a>
 				</button>
-				<form class="inline-flex" action="?/deleteWorkout" method="post">
-					<input type="hidden" name="id" value={id} />
-					<button>
-						<Trash2 class="h-4 w-4" />
-					</button>
-				</form>
+				<button class="cursor-pointer text-red-500" onclick={hideWorkout}>
+					<Trash2 class="h-4 w-4" />
+				</button>
 			</div>
 		</div>
 		<!-- AUTHOR -->

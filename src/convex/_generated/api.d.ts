@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as migrate from "../migrate.js";
 import type * as swimWorkouts from "../swimWorkouts.js";
+import type * as tags from "../tags.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -27,6 +28,7 @@ import type * as swimWorkouts from "../swimWorkouts.js";
 declare const fullApi: ApiFromModules<{
   migrate: typeof migrate;
   swimWorkouts: typeof swimWorkouts;
+  tags: typeof tags;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

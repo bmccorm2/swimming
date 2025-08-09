@@ -1,41 +1,38 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import SwimWorkout from '$lib/SwimWorkout.svelte';
-	import {
-		authorValues,
-		type AuthorFilter,
-		type TagFilter,
-		type SwimWorkoutFullType,
-		tagValues
-	} from '$lib/types';
 	import { page } from '$app/state';
 	import { toast } from 'svelte-sonner';
 	import { useQuery } from 'convex-svelte';
 	import { api } from '../convex/_generated/api.js';
+	import type { SwimWorkoutFullType } from '../convex/schema.js';
 
-	const swimWorkouts = useQuery(api.swimWorkouts.getAll, {});
+	const pageData = useQuery(api.swimWorkouts.getAll, {});
+	const tags = useQuery(api.tags.getAll, {});
 
-	let authorFilter: AuthorFilter = $state('All');
-	let tagFilter: TagFilter = $state('All');
+	let authorFilter = $state('All');
+	let tagFilter = $state('All');
 	let filteredWorkouts = $derived.by(() => {
-		if (!swimWorkouts.data) return [];
-		if (authorFilter === 'All' && tagFilter === 'All') return swimWorkouts.data;
+		if (!pageData.data) return [];
+		if (authorFilter === 'All' && tagFilter === 'All') return pageData.data.workouts;
 
 		let authors: SwimWorkoutFullType[] = [];
 		let tags: SwimWorkoutFullType[] = [];
 
 		if (authorFilter != 'All')
-			authors = swimWorkouts.data.filter((e: SwimWorkoutFullType) => e.author === authorFilter);
+			authors = pageData.data.workouts.filter(
+				(e: SwimWorkoutFullType) => e.author === authorFilter
+			);
 
 		if (tagFilter != 'All')
-			tags = swimWorkouts.data.filter((e1: SwimWorkoutFullType) => {
+			tags = pageData.data.workouts.filter((e1: SwimWorkoutFullType) => {
 				return e1.tags?.some((e2) => e2.tag === tagFilter);
 			});
 		if (tagFilter === 'All') return authors;
 		if (authorFilter === 'All') return tags;
 
 		//else return common elements
-		return authors.filter((e1) => tags.some((e2) => e1.id === e2.id));
+		return authors.filter((e1) => tags.some((e2) => e1._id === e2._id));
 	});
 
 	$effect(() => {
@@ -44,14 +41,14 @@
 	});
 </script>
 
-{#snippet authorButton(authorText: AuthorFilter)}
+{#snippet authorButton(authorText: string)}
 	<Button
 		variant="secondary"
 		class={authorFilter === authorText ? 'bg-blue-500' : ''}
 		onclick={() => (authorFilter = authorText)}>{authorText}</Button
 	>
 {/snippet}
-{#snippet tagButton(tagText: TagFilter)}
+{#snippet tagButton(tagText: string)}
 	<Button
 		variant="secondary"
 		class={tagFilter === tagText ? 'bg-blue-500' : ''}
@@ -67,7 +64,7 @@
 <div class="flex justify-center">
 	<Button
 		variant="link"
-		href="/swimming/modify"
+		href="/modify"
 		class="me-2 mt-4 w-1/2 rounded-lg bg-gradient-to-b from-blue-700 to-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-gradient-to-br focus:ring-4 focus:ring-blue-300 focus:outline-none dark:focus:ring-blue-800"
 		>Add a Workout</Button
 	>
@@ -79,16 +76,28 @@
 	<div class="md:w-3/4">
 		<div class="flex items-center gap-1 overflow-auto">
 			<p class="mr-2 min-w-16">Authors</p>
-			{#each authorValues as author}
-				{@render authorButton(author)}
-			{/each}
+			{#if pageData.isLoading}
+				<p>Loading Authors...</p>
+			{:else if pageData.error}
+				<p>Error Loading Authors.</p>
+			{:else}
+				{#each pageData.data.authors as author}
+					{@render authorButton(author)}
+				{/each}
+			{/if}
 		</div>
 		<!-- TAGS -->
 		<div class="mt-2 flex items-center gap-1 overflow-auto">
 			<p class="mr-2 min-w-16">Tags</p>
-			{#each tagValues as tag}
-				{@render tagButton(tag)}
-			{/each}
+			{#if tags.isLoading}
+				<p>Loading Tags...</p>
+			{:else if tags.error}
+				<p>Error Loading Tags.</p>
+			{:else}
+				{#each tags.data as tag}
+					{@render tagButton(tag.tag)}
+				{/each}
+			{/if}
 		</div>
 	</div>
 	<div
@@ -103,9 +112,9 @@
 
 <hr class="my-4" />
 
-{#if swimWorkouts.isLoading}
+{#if pageData.isLoading}
 	<p>Loading Workouts</p>
-{:else if swimWorkouts.error}
+{:else if pageData.error}
 	<p>Error Loading Workouts</p>
 {:else}
 	<div class="md:grid md:gap-4 lg:grid-cols-2 xl:grid-cols-3">
