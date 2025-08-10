@@ -1,6 +1,8 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { swimWorkoutFull } from './schema';
+import { swimWorkoutFull, swimWorkoutUpdate } from './schema';
+import { Id } from './_generated/dataModel';
+import { mutationGeneric } from 'convex/server';
 
 export const getAll = query({
 	handler: async (ctx) => {
@@ -68,5 +70,80 @@ export const insert = mutation({
 			});
 		}
 		return true;
+	}
+});
+
+export const get = query({
+	args: {
+		swimWorkoutId: v.id('SwimWorkouts')
+	},
+	handler: async (ctx, args) => {
+		const workout = await ctx.db.get(args.swimWorkoutId);
+		const tags = await ctx.db
+			.query('SwimWorkout_Tag_Association')
+			.withIndex('by_swimWorkout', (q) => q.eq('swimWorkoutId', args.swimWorkoutId))
+			.collect();
+		let selectedTags: Id<'Tags'>[] = [];
+
+		for (let i = 0; i < tags.length; i++) {
+			const e = tags[i];
+			const tag = await ctx.db.get(e.tagId);
+			if (tag) selectedTags.push(tag?._id);
+		}
+
+		return {
+			...workout,
+			selectedTags
+		};
+	}
+});
+
+export const update = mutation({
+	args: swimWorkoutUpdate,
+	handler: async (ctx, args) => {
+		//Update the workout
+		await ctx.db.patch(args._id, {
+			swimWorkoutText: args.swimWorkoutText,
+			yards: args.yards,
+			author: args.author,
+			isVisible: true
+		});
+
+		//Delete all current tags
+		const tagsToDelete = await ctx.db
+			.query('SwimWorkout_Tag_Association')
+			.withIndex('by_swimWorkout', (q) => q.eq('swimWorkoutId', args._id))
+			.collect();
+		for (const e of tagsToDelete) {
+			await ctx.db.delete(e._id);
+		}
+
+		//Recreate new tags
+		for (const e of args.tags) {
+			await ctx.db.insert('SwimWorkout_Tag_Association', {
+				swimWorkoutId: args._id,
+				tagId: e
+			});
+		}
+		return true;
+	}
+});
+
+export const permanentDelete = mutation({
+	args: {
+		swimWorkoutId: v.id('SwimWorkouts')
+	},
+	handler: async (ctx, args) => {
+		//Delete all current tags
+		const tagsToDelete = await ctx.db
+			.query('SwimWorkout_Tag_Association')
+			.withIndex('by_swimWorkout', (q) => q.eq('swimWorkoutId', args.swimWorkoutId))
+			.collect();
+		for (const e of tagsToDelete) {
+			await ctx.db.delete(e._id);
+		}
+
+		//Delete Workout
+		await ctx.db.delete(args.swimWorkoutId);
 	}
 });

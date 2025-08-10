@@ -24,6 +24,12 @@ export const swimWorkoutFull = v.object({
 	...selectedTags
 });
 
+export const swimWorkoutUpdate = {
+	...SwimWorkoutFields,
+	_id: v.id('SwimWorkouts'),
+	...selectedTags
+};
+
 export default defineSchema({
 	SwimWorkouts: defineTable(SwimWorkoutFields).index('by_isVisible', ['isVisible']),
 	Tags: defineTable({

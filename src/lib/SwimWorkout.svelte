@@ -32,7 +32,7 @@
 </script>
 
 <Card.Root class="mb-2 md:mb-0">
-	<Card.Content>
+	<Card.Content class="p-4">
 		<div class={`flex justify-between ${author ? 'mb-2' : 'mb-4'}`}>
 			<div class="flex content-center gap-3">
 				<!-- DATE -->
@@ -51,7 +51,7 @@
 					<Link class="h-4 w-4" />
 				</button>
 				<button>
-					<a href="swimming/modify/{_id}">
+					<a href="modify/{_id}">
 						<PencilLine class="h-4 w-4" />
 					</a>
 				</button>
@@ -70,14 +70,14 @@
 				<div class="self-center text-xs text-gray-500">Tags</div>
 				{#if tags && tags.length > 0}
 					{#each tags as tag}
-						<Badge class="bg-purple-700 text-sm">{tag?.tag}</Badge>
+						<Badge class="bg-purple-700 text-sm dark:text-gray-200">{tag?.tag}</Badge>
 					{/each}
 				{:else}
 					<Badge class="bg-red-700 text-sm">No Tags</Badge>
 				{/if}
 			</div>
 
-			<Badge class="mt-2 bg-blue-700 text-sm lg:mt-0">{yards} yards</Badge>
+			<Badge class="mt-2 bg-blue-700 text-sm lg:mt-0 dark:text-gray-200">{yards} yards</Badge>
 		</div>
 		<hr class="my-4" />
 		<!-- WORKOUT -->

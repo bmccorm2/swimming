@@ -10,49 +10,54 @@
 	const pageData = useQuery(api.swimWorkouts.getAll, {});
 	const tags = useQuery(api.tags.getAll, {});
 
-	let authorFilter = $state('All');
-	let tagFilter = $state('All');
+	let authorFilter = $state('');
+	let tagFilter = $state('');
 	let filteredWorkouts = $derived.by(() => {
 		if (!pageData.data) return [];
-		if (authorFilter === 'All' && tagFilter === 'All') return pageData.data.workouts;
+		if (authorFilter === '' && tagFilter === '') return pageData.data.workouts;
 
 		let authors: SwimWorkoutFullType[] = [];
 		let tags: SwimWorkoutFullType[] = [];
 
-		if (authorFilter != 'All')
+		if (authorFilter != '')
 			authors = pageData.data.workouts.filter(
 				(e: SwimWorkoutFullType) => e.author === authorFilter
 			);
 
-		if (tagFilter != 'All')
+		if (tagFilter != '')
 			tags = pageData.data.workouts.filter((e1: SwimWorkoutFullType) => {
 				return e1.tags?.some((e2) => e2.tag === tagFilter);
 			});
-		if (tagFilter === 'All') return authors;
-		if (authorFilter === 'All') return tags;
+		if (tagFilter === '') return authors;
+		if (authorFilter === '') return tags;
 
 		//else return common elements
 		return authors.filter((e1) => tags.some((e2) => e1._id === e2._id));
 	});
 
 	$effect(() => {
-		if (page.url.searchParams.get('success') === 'true')
+		if (page.url.searchParams.get('create') === 'true')
 			toast.success('Successfully created workout!!');
+		if (page.url.searchParams.get('update') === 'true')
+			toast.success('Successfully updated workout!!');
 	});
 </script>
 
 {#snippet authorButton(authorText: string)}
 	<Button
 		variant="secondary"
-		class={authorFilter === authorText ? 'bg-blue-500' : ''}
-		onclick={() => (authorFilter = authorText)}>{authorText}</Button
+		class={`hover:cursor-pointer ${authorFilter === authorText ? 'bg-blue-500' : ''}`}
+		onclick={() =>
+			authorFilter === authorText ? (authorFilter = '') : (authorFilter = authorText)}
+		>{authorText}</Button
 	>
 {/snippet}
 {#snippet tagButton(tagText: string)}
 	<Button
 		variant="secondary"
-		class={tagFilter === tagText ? 'bg-blue-500' : ''}
-		onclick={() => (tagFilter = tagText)}>{tagText}</Button
+		class={`hover:cursor-pointer ${tagFilter === tagText ? 'bg-blue-500' : ''}`}
+		onclick={() => (tagFilter === tagText ? (tagFilter = '') : (tagFilter = tagText))}
+		>{tagText}</Button
 	>
 {/snippet}
 
@@ -65,7 +70,7 @@
 	<Button
 		variant="link"
 		href="/modify"
-		class="me-2 mt-4 w-1/2 rounded-lg bg-gradient-to-b from-blue-700 to-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-gradient-to-br focus:ring-4 focus:ring-blue-300 focus:outline-none dark:focus:ring-blue-800"
+		class="me-2 mt-6 w-1/2 rounded-lg bg-gradient-to-b from-blue-700 to-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-gradient-to-br focus:ring-4 focus:ring-blue-300 focus:outline-none dark:focus:ring-blue-800"
 		>Add a Workout</Button
 	>
 </div>

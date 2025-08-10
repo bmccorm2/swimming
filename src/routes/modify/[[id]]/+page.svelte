@@ -10,15 +10,10 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import type { Id } from '../../../convex/_generated/dataModel.js';
 	import { goto } from '$app/navigation';
-	import { toast } from 'svelte-sonner';
 
-	const id = page.params.id;
+	const id = page.params.id as Id<'SwimWorkouts'>;
 	const client = useConvexClient();
 	const displayTags = useQuery(api.tags.getAll, {});
-	let selectedTags: Id<'Tags'>[] = $state([]);
-	if (id) {
-		selectedTags = []; //TODO FOR UPDATE!!
-	}
 
 	let {
 		workoutText = undefined,
@@ -31,6 +26,20 @@
 		yards: number | undefined;
 		tags: undefined;
 	} = $props();
+
+	let selectedTags: Id<'Tags'>[] = $state([]);
+
+	if (id) {
+		const workout = useQuery(api.swimWorkouts.get, { swimWorkoutId: id });
+		$effect(() => {
+			if (workout.data) {
+				selectedTags = workout.data?.selectedTags;
+				workoutText = workout.data.swimWorkoutText;
+				yards = workout.data.yards;
+				author = workout.data.author;
+			}
+		});
+	}
 
 	function handleTab(event: KeyboardEvent) {
 		const el = event.target as HTMLTextAreaElement;
@@ -46,25 +55,38 @@
 	}
 
 	async function handleSubmit() {
-		if (workoutText !== undefined && author !== undefined && yards !== undefined) {
-			if (
-				await client.mutation(api.swimWorkouts.insert, {
+		if (id) {
+			// Perform an UPDATE
+			if (workoutText !== undefined && author !== undefined && yards !== undefined) {
+				const result = await client.mutation(api.swimWorkouts.update, {
+					_id: id,
 					swimWorkoutText: workoutText,
 					author,
 					yards,
 					isVisible: true,
 					tags: selectedTags
-				})
-			) {
-				goto('/?success=true');
+				});
+				if (result) {
+					goto('/?update=true');
+				}
+			}
+		} else {
+			//Do an INSERT
+			if (workoutText !== undefined && author !== undefined && yards !== undefined) {
+				if (
+					await client.mutation(api.swimWorkouts.insert, {
+						swimWorkoutText: workoutText,
+						author,
+						yards,
+						isVisible: true,
+						tags: selectedTags
+					})
+				) {
+					goto('/?create=true');
+				}
 			}
 		}
 	}
-
-	$effect(() => {
-		if (page.url.searchParams.get('success') === 'true')
-			toast.success('Successfully created workout!!');
-	});
 </script>
 
 <svelte:head>
@@ -133,9 +155,8 @@
 			</div>
 			<div class="my-8 flex justify-center">
 				<Button
-					type="submit"
 					onclick={handleSubmit}
-					class="w-1/2 bg-gradient-to-b from-blue-700 to-blue-600 font-bold text-white uppercase"
+					class="w-1/2 bg-gradient-to-b from-blue-700 to-blue-600 font-bold text-white uppercase hover:cursor-pointer"
 					>Submit</Button
 				>
 			</div>
