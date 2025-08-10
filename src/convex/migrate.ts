@@ -1,5 +1,5 @@
-import { mutation } from './_generated/server';
-import type { Doc } from './_generated/dataModel';
+// import { mutation } from './_generated/server';
+// import type { Doc } from './_generated/dataModel';
 
 // export const association = mutation({
 // 	handler: async (ctx) => {
@@ -18,10 +18,10 @@ import type { Doc } from './_generated/dataModel';
 // 			}
 // 		}
 // 		for (let i = 0; i < tagsArr.length; i++) {
-// 			const element = tagsArr[i];
-// 			const tagId = element.id;
+// 			const e = tagsArr[i];
+// 			const tagId = e.id;
 // 			if (tagId) {
-// 				tags.set(tagId, element);
+// 				tags.set(tagId, e);
 // 			}
 // 		}
 

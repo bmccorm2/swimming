@@ -2,7 +2,6 @@ import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { swimWorkoutFull, swimWorkoutUpdate } from './schema';
 import { Id } from './_generated/dataModel';
-import { mutationGeneric } from 'convex/server';
 
 export const getAll = query({
 	handler: async (ctx) => {

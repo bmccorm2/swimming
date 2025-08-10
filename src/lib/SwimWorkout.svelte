@@ -46,16 +46,17 @@
 			<div class="flex items-center gap-3">
 				<button
 					class="cursor-pointer"
+					aria-label="copy url"
 					onclick={() => copyLink(`${page.url.origin}/swimming/display/${_id}`)}
 				>
 					<Link class="h-4 w-4" />
 				</button>
-				<button>
+				<button aria-label="modify">
 					<a href="modify/{_id}">
 						<PencilLine class="h-4 w-4" />
 					</a>
 				</button>
-				<button class="cursor-pointer text-red-500" onclick={hideWorkout}>
+				<button class="cursor-pointer text-red-500" aria-label="delete" onclick={hideWorkout}>
 					<Trash2 class="h-4 w-4" />
 				</button>
 			</div>
