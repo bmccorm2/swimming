@@ -157,7 +157,7 @@
 				<Button
 					onclick={handleSubmit}
 					class="w-1/2 bg-gradient-to-b from-blue-700 to-blue-600 font-bold text-white uppercase hover:cursor-pointer"
-					>Submit</Button
+					>{id ? 'update' : 'add'}</Button
 				>
 			</div>
 		</form>
