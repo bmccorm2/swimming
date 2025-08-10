@@ -16,8 +16,7 @@ export const SwimWorkoutFields = {
 };
 
 export const selectedTags = {
-	tags: v.array(v.id('Tags')),
-	id: v.float64()
+	tags: v.array(v.id('Tags'))
 };
 
 export const swimWorkoutFull = v.object({

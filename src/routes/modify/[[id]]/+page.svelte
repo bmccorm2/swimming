@@ -108,7 +108,7 @@
 					autocomplete="off"
 					spellcheck="false"
 				/>
-				<div class="ml-6 lg:w-4/12">
+				<div class="mt-6 lg:mt-0 lg:ml-6 lg:w-4/12">
 					<!-- AUTHOR -->
 					<Input
 						placeholder="Author"
@@ -130,7 +130,7 @@
 					{:else if displayTags.error}
 						<p>Error Loading Tags.</p>
 					{:else}
-						<div class="mx-2 mt-8 grid grid-cols-2 gap-2 xl:grid-cols-3">
+						<div class="mx-2 mt-6 grid grid-cols-2 gap-2 xl:grid-cols-3">
 							{#each displayTags.data as tag}
 								{@const checked = selectedTags?.some((e) => e === tag._id)}
 								<div class="flex">
