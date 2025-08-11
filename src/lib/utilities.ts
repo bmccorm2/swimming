@@ -1,4 +1,4 @@
-export const formatToMST = (date: string) => {
+export const formatToMST = (date: number) => {
 	const localDate = new Date(date);
 	localDate.setHours(localDate.getHours() - 7);
 
@@ -10,4 +10,4 @@ export const formatToMST = (date: string) => {
 	} as const;
 
 	return localDate.toLocaleString('en-US', options);
-}
+};

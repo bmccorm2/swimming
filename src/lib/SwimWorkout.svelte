@@ -37,7 +37,7 @@
 			<div class="flex content-center gap-3">
 				<!-- DATE -->
 				<div class="text-3xl font-bold underline">
-					<a href={`/swimming/display/${_id}`}>
+					<a href={`/display/${_id}`}>
 						{formatToMST(_creationTime)}
 					</a>
 				</div>
@@ -47,7 +47,7 @@
 				<button
 					class="cursor-pointer"
 					aria-label="copy url"
-					onclick={() => copyLink(`${page.url.origin}/swimming/display/${_id}`)}
+					onclick={() => copyLink(`${page.url.origin}/display/${_id}`)}
 				>
 					<Link class="h-4 w-4" />
 				</button>

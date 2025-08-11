@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { swimWorkoutFull, swimWorkoutUpdate } from './schema';
+import { swimWorkoutFull, swimWorkoutUpdate, TagType } from './schema';
 import { Id } from './_generated/dataModel';
 
 export const getAll = query({
@@ -78,21 +78,23 @@ export const get = query({
 	},
 	handler: async (ctx, args) => {
 		const workout = await ctx.db.get(args.swimWorkoutId);
-		const tags = await ctx.db
+		if (!workout) throw new Error(`Workout with id ${args.swimWorkoutId} not found`);
+
+		const workoutTags = await ctx.db
 			.query('SwimWorkout_Tag_Association')
 			.withIndex('by_swimWorkout', (q) => q.eq('swimWorkoutId', args.swimWorkoutId))
 			.collect();
-		let selectedTags: Id<'Tags'>[] = [];
+		let tags: TagType[] = [];
 
-		for (let i = 0; i < tags.length; i++) {
-			const e = tags[i];
+		for (let i = 0; i < workoutTags.length; i++) {
+			const e = workoutTags[i];
 			const tag = await ctx.db.get(e.tagId);
-			if (tag) selectedTags.push(tag?._id);
+			if (tag) tags.push(tag);
 		}
 
 		return {
 			...workout,
-			selectedTags
+			tags
 		};
 	}
 });
