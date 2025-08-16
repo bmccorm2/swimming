@@ -7,27 +7,26 @@
 	import { formatToMST } from '$lib/utilities';
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '../convex/_generated/api';
+	import type { SwimWorkoutFullType } from '../convex/schema';
 
 	const client = useConvexClient();
 
 	let {
-		swimWorkoutText,
-		yards,
-		_creationTime,
-		author = undefined,
-		tags = undefined,
-		_id = undefined
+		workoutDetails
+	}: {
+		workoutDetails: SwimWorkoutFullType;
 	} = $props();
+
+	let { swimWorkoutText, yards, _creationTime, author, tags, _id } = workoutDetails;
 
 	const copyLink = async (link: string) => {
 		await navigator.clipboard.writeText(link);
 		toast.info(`Workout link copied!`);
 	};
 
-	function hideWorkout() {
-		client.mutation(api.swimWorkouts.hide, {
-			id: _id
-		});
+	async function hideWorkout() {
+		const res = await client.mutation(api.swimWorkouts.hide, { id: _id });
+		if (res.success === true) toast.success('Deleted Workout');
 	}
 </script>
 

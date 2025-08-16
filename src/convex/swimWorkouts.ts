@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { swimWorkoutFull, swimWorkoutUpdate, TagType } from './schema';
+import { swimWorkoutFull, swimWorkoutUpdate } from './schema';
 import { Id } from './_generated/dataModel';
 
 export const getAll = query({
@@ -48,18 +48,15 @@ export const hide = mutation({
 		await ctx.db.patch(args.id, {
 			isVisible: false
 		});
+		return { success: true };
 	}
 });
 
 export const insert = mutation({
 	args: swimWorkoutFull,
 	handler: async (ctx, args) => {
-		const swimWorkoutId = await ctx.db.insert('SwimWorkouts', {
-			swimWorkoutText: args.swimWorkoutText,
-			yards: args.yards,
-			author: args.author,
-			isVisible: true
-		});
+		const { tags, ...workoutData } = args;
+		const swimWorkoutId = await ctx.db.insert('SwimWorkouts', workoutData);
 
 		for (let i = 0; i < args.tags.length; i++) {
 			const tagId = args.tags[i];
@@ -77,19 +74,20 @@ export const get = query({
 		swimWorkoutId: v.id('SwimWorkouts')
 	},
 	handler: async (ctx, args) => {
-		const workout = await ctx.db.get(args.swimWorkoutId);
-		if (!workout) throw new Error(`Workout with id ${args.swimWorkoutId} not found`);
+		const { swimWorkoutId } = args;
+		const workout = await ctx.db.get(swimWorkoutId);
+		if (!workout) throw new Error(`Workout with id ${swimWorkoutId} not found`);
 
 		const workoutTags = await ctx.db
 			.query('SwimWorkout_Tag_Association')
-			.withIndex('by_swimWorkout', (q) => q.eq('swimWorkoutId', args.swimWorkoutId))
+			.withIndex('by_swimWorkout', (q) => q.eq('swimWorkoutId', swimWorkoutId))
 			.collect();
-		let tags: TagType[] = [];
+		let tags: Id<'Tags'>[] = [];
 
 		for (let i = 0; i < workoutTags.length; i++) {
 			const e = workoutTags[i];
 			const tag = await ctx.db.get(e.tagId);
-			if (tag) tags.push(tag);
+			if (tag) tags.push(tag._id);
 		}
 
 		return {
@@ -102,31 +100,28 @@ export const get = query({
 export const update = mutation({
 	args: swimWorkoutUpdate,
 	handler: async (ctx, args) => {
+		const { _id, tags, ...workoutData } = args;
+
 		//Update the workout
-		await ctx.db.patch(args._id, {
-			swimWorkoutText: args.swimWorkoutText,
-			yards: args.yards,
-			author: args.author,
-			isVisible: true
-		});
+		await ctx.db.patch(_id, workoutData);
 
 		//Delete all current tags
 		const tagsToDelete = await ctx.db
 			.query('SwimWorkout_Tag_Association')
-			.withIndex('by_swimWorkout', (q) => q.eq('swimWorkoutId', args._id))
+			.withIndex('by_swimWorkout', (q) => q.eq('swimWorkoutId', _id))
 			.collect();
 		for (const e of tagsToDelete) {
 			await ctx.db.delete(e._id);
 		}
 
 		//Recreate new tags
-		for (const e of args.tags) {
+		for (const e of tags) {
 			await ctx.db.insert('SwimWorkout_Tag_Association', {
-				swimWorkoutId: args._id,
+				swimWorkoutId: _id,
 				tagId: e
 			});
 		}
-		return true;
+		return { success: true };
 	}
 });
 
@@ -135,16 +130,18 @@ export const permanentDelete = mutation({
 		swimWorkoutId: v.id('SwimWorkouts')
 	},
 	handler: async (ctx, args) => {
+		const { swimWorkoutId } = args;
+
 		//Delete all current tags
 		const tagsToDelete = await ctx.db
 			.query('SwimWorkout_Tag_Association')
-			.withIndex('by_swimWorkout', (q) => q.eq('swimWorkoutId', args.swimWorkoutId))
+			.withIndex('by_swimWorkout', (q) => q.eq('swimWorkoutId', swimWorkoutId))
 			.collect();
 		for (const e of tagsToDelete) {
 			await ctx.db.delete(e._id);
 		}
 
 		//Delete Workout
-		await ctx.db.delete(args.swimWorkoutId);
+		await ctx.db.delete(swimWorkoutId);
 	}
 });

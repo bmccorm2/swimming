@@ -15,25 +15,16 @@
 	const client = useConvexClient();
 	const displayTags = useQuery(api.tags.getAll, {});
 
-	let {
-		workoutText = undefined,
-		author = undefined,
-		yards = undefined,
-		tags = undefined
-	}: {
-		workoutText: string | undefined;
-		author: string | undefined;
-		yards: number | undefined;
-		tags: undefined;
-	} = $props();
-
+	let workoutText: string | undefined = $state(undefined);
+	let author: string | undefined = $state(undefined);
+	let yards: number | undefined = $state(undefined);
 	let selectedTags: Id<'Tags'>[] = $state([]);
 
 	if (id) {
 		const workout = useQuery(api.swimWorkouts.get, { swimWorkoutId: id });
 		$effect(() => {
 			if (workout.data) {
-				selectedTags = workout.data?.selectedTags;
+				selectedTags = workout.data.tags;
 				workoutText = workout.data.swimWorkoutText;
 				yards = workout.data.yards;
 				author = workout.data.author;
@@ -55,35 +46,25 @@
 	}
 
 	async function handleSubmit() {
-		if (id) {
-			// Perform an UPDATE
-			if (workoutText !== undefined && author !== undefined && yards !== undefined) {
+		if (workoutText !== undefined && author !== undefined && yards !== undefined) {
+			const workoutData = {
+				swimWorkoutText: workoutText,
+				author,
+				yards,
+				isVisible: true,
+				tags: selectedTags
+			};
+			if (id) {
+				// Perform an UPDATE
 				const result = await client.mutation(api.swimWorkouts.update, {
 					_id: id,
-					swimWorkoutText: workoutText,
-					author,
-					yards,
-					isVisible: true,
-					tags: selectedTags
+					...workoutData
 				});
-				if (result) {
-					goto('/?update=true');
-				}
-			}
-		} else {
-			//Do an INSERT
-			if (workoutText !== undefined && author !== undefined && yards !== undefined) {
-				if (
-					await client.mutation(api.swimWorkouts.insert, {
-						swimWorkoutText: workoutText,
-						author,
-						yards,
-						isVisible: true,
-						tags: selectedTags
-					})
-				) {
-					goto('/?create=true');
-				}
+				if (result.success === true) goto('/?update=true');
+			} else {
+				//Do an INSERT
+				const id = await client.mutation(api.swimWorkouts.insert, workoutData);
+				if (id) goto('/?create=true');
 			}
 		}
 	}

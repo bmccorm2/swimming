@@ -123,8 +123,8 @@
 	<p>Error Loading Workouts</p>
 {:else}
 	<div class="md:grid md:gap-4 lg:grid-cols-2 xl:grid-cols-3">
-		{#each filteredWorkouts as workout}
-			<SwimWorkout {...workout} />
+		{#each filteredWorkouts as workoutDetails (workoutDetails._id)}
+			<SwimWorkout {workoutDetails} />
 		{/each}
 	</div>
 {/if}

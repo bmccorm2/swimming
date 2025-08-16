@@ -19,15 +19,14 @@ export const selectedTags = {
 	tags: v.array(v.id('Tags'))
 };
 
-export const swimWorkoutFull = v.object({
+export const swimWorkoutFull = {
 	...SwimWorkoutFields,
 	...selectedTags
-});
+};
 
 export const swimWorkoutUpdate = {
-	...SwimWorkoutFields,
 	_id: v.id('SwimWorkouts'),
-	...selectedTags
+	...swimWorkoutFull
 };
 
 export default defineSchema({
