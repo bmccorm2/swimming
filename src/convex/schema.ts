@@ -1,6 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
-import type { Doc } from './_generated/dataModel';
+import type { Doc, Id } from './_generated/dataModel';
 
 export type TagType = Doc<'Tags'>;
 export type SwimWorkoutType = Doc<'SwimWorkouts'>;

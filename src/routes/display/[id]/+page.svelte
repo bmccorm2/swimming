@@ -29,6 +29,6 @@
 				</Breadcrumb.Item>
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
-		<SwimWorkout {...workout.data} />
+		<SwimWorkout workoutDetails={workout.data} />
 	{/if}
 </div>

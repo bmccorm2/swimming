@@ -24,7 +24,7 @@
 		const workout = useQuery(api.swimWorkouts.get, { swimWorkoutId: id });
 		$effect(() => {
 			if (workout.data) {
-				selectedTags = workout.data.tags;
+				selectedTags = workout.data.tags.map((e) => e._id);
 				workoutText = workout.data.swimWorkoutText;
 				yards = workout.data.yards;
 				author = workout.data.author;

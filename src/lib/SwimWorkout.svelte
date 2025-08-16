@@ -68,7 +68,7 @@
 		<div class="lg:flex lg:justify-between">
 			<div class="flex gap-2">
 				<div class="self-center text-xs text-gray-500">Tags</div>
-				{#if tags && tags.length > 0}
+				{#if tags.length > 0}
 					{#each tags as tag}
 						<Badge class="bg-purple-700 text-sm dark:text-gray-200">{tag?.tag}</Badge>
 					{/each}
